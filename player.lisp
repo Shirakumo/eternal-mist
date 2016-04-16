@@ -7,7 +7,9 @@
 (in-package #:org.shirakumo.fraf.ld35)
 (in-readtable :qtools)
 
-(define-subject colleen (located-subject textured-subject savable)
+(defvar *player* NIL)
+
+(define-subject colleen (collidable-subject textured-subject savable)
   ((velocity :initarg :velocity :accessor velocity)
    (frame :initform 0 :accessor frame))
   (:default-initargs
@@ -15,6 +17,9 @@
    :velocity (vec 0 0 0)
    :location (vec 0 0 0)
    :name :player))
+
+(defmethod initialize-instance :after ((colleen colleen) &key)
+  (setf *player* colleen))
 
 (define-handler (colleen tick) (ev)
   (nv+ (location colleen) (velocity colleen)))

@@ -7,7 +7,13 @@ Author: Janne Pakarinen <gingeralesy@gmail.com>
 (in-package #:org.shirakumo.fraf.ld35)
 
 (define-subject tile (subject)
-  ((objects :initform (flare-queue:make-queue) :accessor objects)))
+  ((objects :initform (flare-queue:make-queue) :accessor objects)
+   (player-p :initform NIL :accessor player-p)
+   (x :initarg :x :accessor x)
+   (y :initarg :y :accessor y))
+  (:default-initargs
+   :x (error "Please provide x coordinate.")
+   :y (error "Please provide y coordinate.")))
 
 (defmethod add-object ((tile tile) (object textured-subject))
   (flare-queue:enqueue object (objects tile)))
@@ -34,7 +40,8 @@ Author: Janne Pakarinen <gingeralesy@gmail.com>
   ((width :initarg :width :accessor width)
    (height :initarg :height :accessor height)
    (depth :initform 0)
-   (tiles :initform NIL :accessor tiles))
+   (tiles :initform NIL :accessor tiles)
+   (player-tile :initform NIL :accessor player-tile))
   (:default-initargs
    :width (error "Please define width.")
    :height (error "Please define height.")))
@@ -45,17 +52,27 @@ Author: Janne Pakarinen <gingeralesy@gmail.com>
   (setf (tiles map) (make-array `(,(width map) ,(height map))
                                 :fill-pointer 0)))
 
+(defmethod add-tile-object ((map tilemap) (object textured-subject) x y)
+  (let ((tile (tile map x y)))
+    (unless tile
+      (setf tile (make-instance 'tile :x x :y y))
+      (setf (tile map x y) tile))
+    (add-object tile object)))
+
 (defmethod depth ((map tilemap))
   (slot-value map 'depth))
 
 (defmethod paint ((map tilemap) target)
   (dotimes (x (width map))
     (dotimes (y (height map))
-      (let ((tile (aref (tiles map) x y)))
+      (let ((tile (tile map x y)))
         (when tile (paint tile target))))))
 
 (defmethod tile ((map tilemap) x y)
   (aref (tiles map) x y))
+
+(defmethod (setf tile) ((tile tile) (map tilemap) x y)
+  (setf (aref (tiles map) x y) tile))
 
 (defmethod top-tile-object ((map tilemap) x y)
   (let ((tile (tile map x y)))
@@ -64,3 +81,12 @@ Author: Janne Pakarinen <gingeralesy@gmail.com>
 (defmethod remove-top-tile-object ((map tilemap) x y)
   (let ((tile (tile map x y)))
     (when tile (remove-top-object tile))))
+
+(define-handler (tilemap tick) (ev)
+  (let ((isection (intersects tilemap *player*)))
+    (if isection
+      (let* ((point (v- (v+ (location isection) (v/ (bounds isection) 2))
+                        (location tilemap)))
+             (tile-coords (v/ point (bounds tilemap))))
+        (setf (player-tile tilemap) (tile tilemap (floor (vx tile-coords)) (floor (vy tile-coords)))))
+      (setf (player-tile tilemap) NIL))))
