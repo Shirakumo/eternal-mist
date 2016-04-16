@@ -7,6 +7,8 @@
 (defpackage #:ld35
   (:nicknames #:org.shirakumo.fraf.ld35)
   (:use #:cl+qt #:trial)
-  (:shadowing-import-from #:flare #:slot))
+  (:shadowing-import-from #:flare #:slot)
+  (:shadow #:launch)
+  (:export #:launch))
 (in-package #:org.shirakumo.fraf.ld35)
 (in-readtable :qtools)

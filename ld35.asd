@@ -13,5 +13,11 @@
   :description "Entry for the Ludum Dare 35"
   :homepage "https://github.com/Shirakumo/trial"
   :serial T
-  :components ((:file "package"))
-  :depends-on (:trial))
+  :defsystem-depends-on (:qtools)
+  :components ((:file "package")
+               (:file "player")
+               (:file "main"))
+  :depends-on (:trial)
+  :build-operation "qt-program-op"
+  :build-pathname "ld35"
+  :entry-point "ld35:launch")
