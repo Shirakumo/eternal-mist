@@ -10,7 +10,10 @@
 (defun trial::setup-scene (scene)
   (enter (make-instance 'space-axes) scene)
   (enter (make-instance 'colleen) scene)
-  (enter (make-instance 'following-camera :name :camera :target (unit :player scene)) scene))
+  (enter (make-instance 'following-camera
+                        :name :camera
+                        :target (unit :player scene)
+                        :location (vec 0 100 300)) scene))
 
 (defun launch (&optional standalone)
   (setf *root* (if standalone

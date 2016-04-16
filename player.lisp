@@ -9,46 +9,54 @@
 
 (defvar *player* NIL)
 
-(define-subject colleen (collidable-subject textured-subject savable)
-  ((velocity :initarg :velocity :accessor velocity)
-   (frame :initform 0 :accessor frame))
+(define-subject colleen (located-subject rotated-subject pivoted-subject sprite-subject savable)
+  ((velocity :initarg :velocity :accessor velocity))
   (:default-initargs
-   :texture "colleen-walking.png"
    :velocity (vec 0 0 0)
    :location (vec 0 0 0)
-   :name :player))
+   :pivot (vec -25 0 0)
+   :name :player
+   :animations '((idle 2.0 20 :texture "colleen-idle.png"    :width 50 :height 80)
+                 (walk 0.7 20 :texture "colleen-walking.png" :width 50 :height 80))))
 
 (defmethod initialize-instance :after ((colleen colleen) &key)
   (setf *player* colleen))
 
 (define-handler (colleen tick) (ev)
-  (nv+ (location colleen) (velocity colleen)))
+  (with-slots (location velocity angle) colleen
+    (cond ((/= 0 (vx velocity))
+           (let* ((ang (* (/ angle 180) PI))
+                  (vec (nvrot (vec -1 0 0) (vec 0 1 0) ang)))
+             (when (< 0.1 (abs (- (vx vec) (vx (vunit velocity)))))
+               (incf angle 20)))))
+    (nv+ location velocity)))
 
 (define-handler (colleen movement) (ev)
-  (typecase ev
-    (start-left (setf (vx (velocity colleen)) -5))
-    (start-right (setf (vx (velocity colleen)) 5))
-    (start-up (setf (vz (velocity colleen)) -5))
-    (start-down (setf (vz (velocity colleen)) 5))
-    (stop-left (when (< (vx (velocity colleen)) 0)
-                 (setf (vx (velocity colleen)) 0)))
-    (stop-right (when (< 0 (vx (velocity colleen)))
-                  (setf (vx (velocity colleen)) 0)))
-    (stop-up (when (< (vz (velocity colleen)) 0)
-               (setf (vz (velocity colleen)) 0)))
-    (stop-down (when (< 0 (vz (velocity colleen)))
-                 (setf (vz (velocity colleen)) 0)))))
+  (with-slots (location velocity) colleen
+    (typecase ev
+      (start-left
+       (setf (vx velocity) -7))
+      (start-right
+       (setf (vx velocity) 7))
+      (start-up
+       (setf (vz velocity) -7))
+      (start-down
+       (setf (vz velocity) 7))
+      (stop-left
+       (when (< (vx velocity) 0)
+         (setf (vx velocity) 0)))
+      (stop-right
+       (when (< 0 (vx velocity))
+         (setf (vx velocity) 0)))
+      (stop-up
+       (when (< (vz velocity) 0)
+         (setf (vz velocity) 0)))
+      (stop-down
+       (when (< 0 (vz velocity))
+         (setf (vz velocity) 0))))
+    (if (< 0 (vlength velocity))
+        (setf (animation colleen) 'walk)
+        (setf (animation colleen) 'idle))))
 
 (defmethod paint ((colleen colleen) target)
-  (let ((w (* 4 5.41)) (h (* 4 7.74)))
-    (setf (frame colleen) (mod (1+ (frame colleen)) 7))
-    (let ((frame (frame colleen)))
-      (with-primitives :quads
-        (gl:tex-coord 0 (* frame 1/7))
-        (gl:vertex (- (/ w 2)) 0 0)
-        (gl:tex-coord 1 (* frame 1/7))
-        (gl:vertex (+ (/ w 2)) 0 0)
-        (gl:tex-coord 1 (* (1+ frame) 1/7))
-        (gl:vertex (+ (/ w 2)) h)
-        (gl:tex-coord 0 (* (1+ frame) 1/7))
-        (gl:vertex (- (/ w 2)) h)))))
+  (call-next-method))
