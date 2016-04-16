@@ -6,6 +6,7 @@
 
 (defpackage #:ld35
   (:nicknames #:org.shirakumo.fraf.ld35)
-  (:use #:cl+qt #:trial))
+  (:use #:cl+qt #:trial)
+  (:shadowing-import-from #:flare #:slot))
 (in-package #:org.shirakumo.fraf.ld35)
 (in-readtable :qtools)
