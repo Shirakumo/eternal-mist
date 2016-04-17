@@ -13,7 +13,12 @@
   (enter (make-instance 'following-camera
                         :name :camera
                         :target (unit :player scene)
-                        :location (vec 0 100 300)) scene))
+                        :location (vec 0 100 300)) scene)
+  (enter (make-instance 'tilemap
+                        :location (vec -100 0 0)
+                        :bounds (vec 200 1 200)
+                        :width 10
+                        :height 10) scene))
 
 (defun launch (&optional standalone)
   (setf *root* (if standalone
