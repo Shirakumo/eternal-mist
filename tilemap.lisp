@@ -61,19 +61,21 @@ Author: Janne Pakarinen <gingeralesy@gmail.com>
                                 :initial-element NIL))
   (when (v= 0 (pivot map))
     (let ((size (v/ (bounds map) 2)))
-      (setf (pivot map) (v- 0 (vec (vx size) 0 (vz size)))))))
+      (setf (pivot map) (v- 0 (vec (vx size) 0 (vz size))))))
+  ;; Initialie with empty tiles
+  (dotimes (x (width map))
+    (dotimes (y (width map))
+      (setf (tile map x y)
+            (make-instance 'tile :x x :y y
+                                 :bounds (vec tile-side 1 tile-side)
+                                 :location (vec (+ (* x tile-side) (vx map-location))
+                                                (vy map-location)
+                                                (+ (* y tile-side) (vz map-location))))))))
 
 (defmethod add-tile-object ((map tilemap) (object textured-subject) x y)
   (let ((tile (tile map x y))
         (tile-side (/ (width map) (bounds (vx map))))
         (map-location (location map)))
-    (unless tile
-      (setf tile (make-instance 'tile :x x :y y
-                                      :bounds (vec tile-side 1 tile-side)
-                                      :location (vec (+ (* x tile-side) (vx map-location))
-                                                     (vy map-location)
-                                                     (+ (* y tile-side) (vz map-location)))))
-      (setf (tile map x y) tile))
     (add-object tile object)))
 
 (defmethod depth ((map tilemap))
@@ -85,6 +87,13 @@ Author: Janne Pakarinen <gingeralesy@gmail.com>
       (let ((tile (tile map x y)))
         (when tile (paint tile target)))))
   (call-next-method))
+
+(defmethod tile-on-coordinates ((map tilemap) (coordinates located-subject))
+  (when coordinates
+    (let* ((point (v- (location coordinates) (location map)))
+           (tile-coords (v/ point (bounds map))))
+      (when (and (v<= 0 tile-coords) (< (vx tile-coords) (width map)) (< (vz tile-coords) (height map)))
+        (tile map (floor (vx tile-coords)) (floor (vz tile-coords)))))))
 
 (defmethod tile ((map tilemap) x y)
   (aref (tiles map) x y))
@@ -102,11 +111,8 @@ Author: Janne Pakarinen <gingeralesy@gmail.com>
 
 (define-handler (tilemap tick) (ev)
   ;; NTS: Remember that the tile Y-coordinate is specified with the world Z-coordinate
-  (let ((isection (intersects tilemap (unit :player (scene *main*)) :ignore-y T)))
-    (if isection
-        (let* ((point (v- (location isection) (location tilemap)))
-               (tile-coords (v/ point (bounds tilemap))))
-          (if (and (v<= 0 tile-coords) (< (vx tile-coords) (width tilemap)) (< (vz tile-coords) (height tilemap)))
-              (setf (player-tile tilemap) (tile tilemap (floor (vx tile-coords)) (floor (vz tile-coords))))
-              (setf (player-tile tilemap) NIL)))
-      (setf (player-tile tilemap) NIL))))
+  (let* ((isection (intersects tilemap (unit :player (scene *main*)) :ignore-y T))
+         (tile (tile-on-coordinates tilemap isection)))
+    (if tile
+        (setf (player-tile tilemap) tile)
+        (setf (player-tile tilemap) NIL))))
