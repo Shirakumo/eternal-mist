@@ -20,6 +20,12 @@
    :animations '((idle 2.0 20 :texture "colleen-idle.png"    :width 50 :height 80)
                  (walk 0.7 20 :texture "colleen-walking.png" :width 50 :height 80))))
 
+(defun nvclamp (vec x y z)
+  (vsetf vec
+         (max (- x) (min x (vx vec)))
+         (max (- y) (min y (vy vec)))
+         (max (- z) (min z (vz vec)))))
+
 (defmethod initialize-instance :after ((colleen colleen) &key)
   (setf *player* colleen))
 
@@ -29,7 +35,8 @@
            (vec (nvrot (vec -1 0 0) (vec 0 1 0) ang)))
       (when (< 0.01 (abs (- (vx vec) (ecase facing (:left -1) (:right 1)))))
         (incf angle 20)))
-    (nv+ location velocity)))
+    (nv+ location velocity)
+    (nvclamp location 230 0 23as0)))
 
 (define-handler (colleen movement) (ev)
   (with-slots (location velocity facing) colleen
