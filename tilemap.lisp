@@ -42,7 +42,7 @@ Author: Janne Pakarinen <gingeralesy@gmail.com>
   (let ((obj (top-object tile)))
     (flare-queue:queue-remove obj (objects tile))))
 
-(define-subject tilemap (bound-subject)
+(define-subject tilemap (bound-subject pivoted-subject)
   ((width :initarg :width :accessor width)
    (height :initarg :height :accessor height)
    (depth :initform 0)
@@ -58,14 +58,21 @@ Author: Janne Pakarinen <gingeralesy@gmail.com>
   (unless (v< 0 (bounds map))
     (error "Tilemap has no physical size."))
   (setf (tiles map) (make-array `(,(width map) ,(height map))
-                                :initial-element NIL)))
+                                :initial-element NIL))
+  (when (v= 0 (pivot map))
+    (let ((size (v/ (bounds map) 2)))
+      (setf (pivot map) (v- 0 (vec (vx size) 0 (vz size)))))))
 
 (defmethod add-tile-object ((map tilemap) (object textured-subject) x y)
   (let ((tile (tile map x y))
-        (tile-side (/ (width map) (bounds (vx map)))))
+        (tile-side (/ (width map) (bounds (vx map))))
+        (map-location (location map)))
     (unless tile
       (setf tile (make-instance 'tile :x x :y y
-                                      :bounds (vec tile-side 1 tile-side)))
+                                      :bounds (vec tile-side 1 tile-side)
+                                      :location (vec (+ (* x tile-side) (vx map-location))
+                                                     (vy map-location)
+                                                     (+ (* y tile-side) (vz map-location)))))
       (setf (tile map x y) tile))
     (add-object tile object)))
 
@@ -97,10 +104,9 @@ Author: Janne Pakarinen <gingeralesy@gmail.com>
   ;; NTS: Remember that the tile Y-coordinate is specified with the world Z-coordinate
   (let ((isection (intersects tilemap (unit :player (scene *main*)) :ignore-y T)))
     (if isection
-      (let* ((point (v- (v+ (location isection) (v/ (bounds isection) 2))
-                        (location tilemap)))
-             (tile-coords (v/ point (bounds tilemap))))
-        (if (and (v<= 0 tile-coords) (< (vx tile-coords) (width tilemap)) (< (vz tile-coords) (height tilemap)))
-            (setf (player-tile tilemap) (tile tilemap (floor (vx tile-coords)) (floor (vz tile-coords))))
-            (setf (player-tile tilemap) NIL)))
+        (let* ((point (v- (location isection) (location tilemap)))
+               (tile-coords (v/ point (bounds tilemap))))
+          (if (and (v<= 0 tile-coords) (< (vx tile-coords) (width tilemap)) (< (vz tile-coords) (height tilemap)))
+              (setf (player-tile tilemap) (tile tilemap (floor (vx tile-coords)) (floor (vz tile-coords))))
+              (setf (player-tile tilemap) NIL)))
       (setf (player-tile tilemap) NIL))))

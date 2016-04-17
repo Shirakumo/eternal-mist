@@ -15,7 +15,7 @@
                         :target (unit :player scene)
                         :location (vec 0 100 300)) scene)
   (enter (make-instance 'tilemap
-                        :location (vec -100 0 0)
+                        :location (vec 0 0 0)
                         :bounds (vec 200 1 200)
                         :width 10
                         :height 10) scene))
