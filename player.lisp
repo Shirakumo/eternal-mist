@@ -8,12 +8,14 @@
 (in-readtable :qtools)
 
 (define-subject colleen (collidable-subject rotated-subject pivoted-subject sprite-subject savable)
-  ((velocity :initarg :velocity :accessor velocity))
+  ((velocity :initarg :velocity :accessor velocity)
+   (facing :initarg :facing :accessor facing))
   (:default-initargs
    :velocity (vec 0 0 0)
    :location (vec 0 0 0)
    :bounds (vec 50 80 10)
    :pivot (vec -25 0 5)
+   :facing :left
    :name :player
    :animations '((idle 2.0 20 :texture "colleen-idle.png"    :width 50 :height 80)
                  (walk 0.7 20 :texture "colleen-walking.png" :width 50 :height 80))))
@@ -22,20 +24,21 @@
   (setf *player* colleen))
 
 (define-handler (colleen tick) (ev)
-  (with-slots (location velocity angle) colleen
-    (cond ((/= 0 (vx velocity))
-           (let* ((ang (* (/ angle 180) PI))
-                  (vec (nvrot (vec -1 0 0) (vec 0 1 0) ang)))
-             (when (< 0.1 (abs (- (vx vec) (vx (vunit velocity)))))
-               (incf angle 20)))))
+  (with-slots (location velocity angle facing) colleen
+    (let* ((ang (* (/ angle 180) PI))
+           (vec (nvrot (vec -1 0 0) (vec 0 1 0) ang)))
+      (when (< 0.01 (abs (- (vx vec) (ecase facing (:left -1) (:right 1)))))
+        (incf angle 20)))
     (nv+ location velocity)))
 
 (define-handler (colleen movement) (ev)
-  (with-slots (location velocity) colleen
+  (with-slots (location velocity facing) colleen
     (typecase ev
       (start-left
+       (setf facing :left)
        (setf (vx velocity) -7))
       (start-right
+       (setf facing :right)
        (setf (vx velocity) 7))
       (start-up
        (setf (vz velocity) -7))
