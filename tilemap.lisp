@@ -13,7 +13,12 @@ Author: Janne Pakarinen <gingeralesy@gmail.com>
    (y :initarg :y :accessor y))
   (:default-initargs
    :x (error "Please provide x coordinate.")
-   :y (error "Please provide y coordinate.")))
+   :y (error "Please provide y coordinate.")
+   :bounds (error "Please provide tile size.")))
+
+(defmethod initialize-instance :after ((tile tile) &key)
+  (setf (location tile)
+        (vec )))
 
 (defmethod add-object ((tile tile) (object textured-subject))
   (flare-queue:enqueue object (objects tile)))
@@ -26,7 +31,8 @@ Author: Janne Pakarinen <gingeralesy@gmail.com>
           (paint object target)
           (flare-queue:enqueue object new-queue)
           (setf object (flare-queue:dequeue old-queue)))
-    (setf (objects tile) new-queue)))
+    (setf (objects tile) new-queue))
+  (call-next-method))
 
 (defmethod top-object ((tile tile))
   (flare-queue:queue-last (objects tile)))
@@ -46,16 +52,20 @@ Author: Janne Pakarinen <gingeralesy@gmail.com>
    :width (error "Please define width.")
    :height (error "Please define height.")))
 
-(defmethod initialize-instance ((map tilemap) &key)
+(defmethod initialize-instance :after ((map tilemap) &key)
   (unless (and (< 0 (height map)) (< 0 (width map)))
     (error "Invalid dimensions."))
+  (unless (v< 0 (bounds map))
+    (error "Tilemap has no physical size."))
   (setf (tiles map) (make-array `(,(width map) ,(height map))
-                                :fill-pointer 0)))
+                                :initial-element NIL)))
 
 (defmethod add-tile-object ((map tilemap) (object textured-subject) x y)
-  (let ((tile (tile map x y)))
+  (let ((tile (tile map x y))
+        (tile-side (/ (width map) (bounds (vx map)))))
     (unless tile
-      (setf tile (make-instance 'tile :x x :y y))
+      (setf tile (make-instance 'tile :x x :y y
+                                      :bounds (vec tile-side 1 tile-side)))
       (setf (tile map x y) tile))
     (add-object tile object)))
 
@@ -66,7 +76,8 @@ Author: Janne Pakarinen <gingeralesy@gmail.com>
   (dotimes (x (width map))
     (dotimes (y (height map))
       (let ((tile (tile map x y)))
-        (when tile (paint tile target))))))
+        (when tile (paint tile target)))))
+  (call-next-method))
 
 (defmethod tile ((map tilemap) x y)
   (aref (tiles map) x y))
@@ -83,10 +94,13 @@ Author: Janne Pakarinen <gingeralesy@gmail.com>
     (when tile (remove-top-object tile))))
 
 (define-handler (tilemap tick) (ev)
-  (let ((isection (intersects tilemap (unit :player (scene *main*)))))
+  ;; NTS: Remember that the tile Y-coordinate is specified with the world Z-coordinate
+  (let ((isection (intersects tilemap (unit :player (scene *main*)) :ignore-y T)))
     (if isection
       (let* ((point (v- (v+ (location isection) (v/ (bounds isection) 2))
                         (location tilemap)))
              (tile-coords (v/ point (bounds tilemap))))
-        (setf (player-tile tilemap) (tile tilemap (floor (vx tile-coords)) (floor (vy tile-coords)))))
+        (if (and (v<= 0 tile-coords) (< (vx tile-coords) (width tilemap)) (< (vz tile-coords) (height tilemap)))
+            (setf (player-tile tilemap) (tile tilemap (floor (vx tile-coords)) (floor (vz tile-coords))))
+            (setf (player-tile tilemap) NIL)))
       (setf (player-tile tilemap) NIL))))
