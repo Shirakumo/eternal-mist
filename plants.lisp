@@ -6,12 +6,27 @@ Author: Janne Pakarinen <gingeralesy@gmail.com>
 
 (in-package #:org.shirakumo.fraf.ld35)
 
-(define-subject flora-subject (pivoted-subject bound-subject sprite-subject clocked-subject)
+(define-subject flora-subject (pivoted-subject bound-subject textured-subject)
   ((name :initarg :name :accessor name)
    (family :initarg :family :accessor family))
   (:default-initargs
    :name NIL
-   :family NIL))
+   :family NIL
+   :bounds (vec 20 20 1)))
+
+(defmethod paint ((subject flora-subject) target)
+  (with-slots (bounds) subject
+    (gl:disable :cull-face)
+    (with-primitives :quads
+      (gl:tex-coord 0 0)
+      (gl:vertex 0 0)
+      (gl:tex-coord 1 0)
+      (gl:vertex (vx bounds) 0)
+      (gl:tex-coord 1 1)
+      (gl:vertex (vx bounds) (vy bounds))
+      (gl:tex-coord 0 1)
+      (gl:vertex 0 (vy bounds)))
+    (gl:enable :cull-face)))
 
 (define-subject seed-subject (flora-subject)
   ((sprout :initarg :sprout :accessor sprout))
@@ -25,9 +40,13 @@ Author: Janne Pakarinen <gingeralesy@gmail.com>
     (enter sprout scene)
     (add-object (player-tile field) sprout)))
 
-(defmacro define-seed (name direct-superclasses direct-slots &rest options))
+(defmethod paint ((seed seed-subject) field)
+  ;; Seeds lie flat on the ground
+  (with-pushed-matrix
+    (gl:rotate 90 1 0 0)
+    (call-next-method)))
 
-(define-subject sprout-subject (flora-subject)
+(define-subject sprout-subject (flora-subject clocked-subject)
   ((produce :initarg :produce :accessor produce)
    (final-stage :initarg :final-stage :accessor final-stage)
    (stage-time :initform 0 :accessor stage-time))
@@ -42,31 +61,27 @@ Author: Janne Pakarinen <gingeralesy@gmail.com>
 
 (defmethod make-produce ((sprout sprout-subject))
   (when (<= (final-stage sprout) (stage sprout))
-    (loop for prod in (produce sprout) ;; Figure this one out later
-          do (make-instance prod :location (location sprout)))
+    ;; FIXME: multiple produce items? Continuous production?
+    (make-instance (produce sprout) :location (location sprout))
     (leave sprout (scene *main*))))
-
-(defmacro define-sprout (name direct-superclasses direct-slots &rest options))
 
 (define-subject produce-subject (flora-subject)) ;; TODO: add whatever statistics produce have
 
-(defmacro define-produce (name direct-superclasses direct-slots &rest options))
-
 ;; REMOVE STUFF BELOW SOMEDAY
 
-(defclass turnip (produce-subject)
+(defclass turnip-produce (produce-subject)
   ()
   (:default-initargs
-   :animations '((idle 1.0 1 :texture "turnip.png" :width 20 :height 20))))
+   :texture "turnip-produce.png"))
 
 (defclass turnip-sprout (sprout-subject)
   ()
   (:default-initargs
-   :produce 'turnip
-   :animations '((idle 1.0 1 :texture "turnip-sprout.png" :width 20 :height 20))))
+   :produce 'turnip-produce
+   :texture "sprout.png"))
 
 (defclass turnip-seed (seed-subject)
   ()
   (:default-initargs
    :sprout 'turnip-sprout
-   :animations '((idle 1.0 1 :texture "turnip-seed.png" :width 20 :height 20))))
+   :texture "seed.png"))
