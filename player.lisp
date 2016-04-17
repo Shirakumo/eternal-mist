@@ -7,8 +7,6 @@
 (in-package #:org.shirakumo.fraf.ld35)
 (in-readtable :qtools)
 
-(defvar *player* NIL)
-
 (define-subject colleen (located-subject rotated-subject pivoted-subject sprite-subject savable)
   ((velocity :initarg :velocity :accessor velocity))
   (:default-initargs

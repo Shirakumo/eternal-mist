@@ -83,7 +83,7 @@ Author: Janne Pakarinen <gingeralesy@gmail.com>
     (when tile (remove-top-object tile))))
 
 (define-handler (tilemap tick) (ev)
-  (let ((isection (intersects tilemap *player*)))
+  (let ((isection (intersects tilemap (unit :player (scene *main*)))))
     (if isection
       (let* ((point (v- (v+ (location isection) (v/ (bounds isection) 2))
                         (location tilemap)))
