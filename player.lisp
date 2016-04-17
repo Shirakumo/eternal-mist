@@ -12,6 +12,7 @@
   (:default-initargs
    :velocity (vec 0 0 0)
    :location (vec 0 0 0)
+   :bounds (vec 50 80 20)
    :pivot (vec -25 0 0)
    :name :player
    :animations '((idle 2.0 20 :texture "colleen-idle.png"    :width 50 :height 80)
