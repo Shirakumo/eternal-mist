@@ -36,7 +36,7 @@
       (when (< 0.01 (abs (- (vx vec) (ecase facing (:left -1) (:right 1)))))
         (incf angle 20)))
     (nv+ location velocity)
-    (nvclamp location 230 0 23as0)))
+    (nvclamp location 230 0 230)))
 
 (define-handler (colleen movement) (ev)
   (with-slots (location velocity facing) colleen
