@@ -7,7 +7,7 @@
 (in-package #:org.shirakumo.fraf.ld35)
 (in-readtable :qtools)
 
-(define-subject colleen (located-subject rotated-subject pivoted-subject sprite-subject savable)
+(define-subject colleen (collidable-subject rotated-subject pivoted-subject sprite-subject savable)
   ((velocity :initarg :velocity :accessor velocity))
   (:default-initargs
    :velocity (vec 0 0 0)
