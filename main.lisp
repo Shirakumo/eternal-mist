@@ -8,12 +8,14 @@
 (in-readtable :qtools)
 
 (defun trial::setup-scene (scene)
+  (enter (make-instance 'skybox) scene)
+  (enter (make-instance 'world) scene)
   (enter (make-instance 'space-axes) scene)
   (enter (make-instance 'colleen) scene)
   (enter (make-instance 'following-camera
                         :name :camera
                         :target (unit :player scene)
-                        :location (vec 0 100 300)) scene)
+                        :location (vec 0 150 250)) scene)
   (enter (make-instance 'tilemap
                         :location (vec 0 0 0)
                         :bounds (vec 200 1 200)

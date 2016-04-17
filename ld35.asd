@@ -16,6 +16,7 @@
   :defsystem-depends-on (:qtools)
   :components ((:file "package")
                (:file "player")
+               (:file "world")
                (:file "tilemap")
                (:file "main"))
   :depends-on (:trial)
