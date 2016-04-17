@@ -6,7 +6,7 @@ Author: Janne Pakarinen <gingeralesy@gmail.com>
 
 (in-package #:org.shirakumo.fraf.ld35)
 
-(define-subject flora-subject (pivoted-subject bound-subject textured-subject clocked-subject)
+(define-subject flora-subject (pivoted-subject bound-subject sprite-subject clocked-subject)
   ((name :initarg :name :accessor name)
    (family :initarg :family :accessor family))
   (:default-initargs
@@ -14,38 +14,59 @@ Author: Janne Pakarinen <gingeralesy@gmail.com>
    :family NIL))
 
 (define-subject seed-subject (flora-subject)
-  ((plant :initarg :plant :accessor plant))
+  ((sprout :initarg :sprout :accessor sprout))
   (:default-initargs
-   :plant (error "Define plant class for this seed to grow into.")))
+   :sprout (error "Define sprout class for this seed to grow into.")))
 
 (defmethod plant-seed ((seed seed-subject) field)
-  (let ((plant (change-class seed (plant seed)))
+  (let ((sprout (change-class seed (sprout seed)))
         (scene (scene *main*)))
     (leave seed scene)
-    (enter plant scene)
-    (add-object (player-tile field) plant)))
+    (enter sprout scene)
+    (add-object (player-tile field) sprout)))
 
-(define-subject plant-subject (flora-subject)
+(defmacro define-seed (name direct-superclasses direct-slots &rest options))
+
+(define-subject sprout-subject (flora-subject)
   ((produce :initarg :produce :accessor produce)
    (final-stage :initarg :final-stage :accessor final-stage)
    (stage-time :initform 0 :accessor stage-time))
   (:default-initargs
    :produce NIL))
 
-(defmethod enter :after ((plant plant-subject) scene)
-  (start plant))
+(defmethod enter :after ((sprout sprout-subject) scene)
+  (start sprout))
 
-(defmethod stage ((plant plant-subject))
-  (mod (clock plant) (stage-time plant)))
+(defmethod stage ((sprout sprout-subject))
+  (mod (clock sprout) (stage-time sprout)))
 
-(defmethod make-produce ((plant plant-subject))
-  (when (<= (final-stage plant) (stage plant))
-    (loop for prod in (produce plant) ;; Figure this one out later
-          do (make-instance prod :location (location plant)))
-    (leave plant (scene *main*))))
+(defmethod make-produce ((sprout sprout-subject))
+  (when (<= (final-stage sprout) (stage sprout))
+    (loop for prod in (produce sprout) ;; Figure this one out later
+          do (make-instance prod :location (location sprout)))
+    (leave sprout (scene *main*))))
+
+(defmacro define-sprout (name direct-superclasses direct-slots &rest options))
 
 (define-subject produce-subject (flora-subject)) ;; TODO: add whatever statistics produce have
 
-(defmacro define-flora-subject (name direct-superclasses direct-slots &rest options)
-  ;; TODO: Macro for defining new plants with seeds and produce
-  )
+(defmacro define-produce (name direct-superclasses direct-slots &rest options))
+
+;; REMOVE STUFF BELOW SOMEDAY
+
+(defclass turnip (produce-subject)
+  ()
+  (:default-initargs
+   :animations '((idle 1.0 1 :texture "turnip.png" :width 20 :height 20))))
+
+(defclass turnip-sprout (sprout-subject)
+  ()
+  (:default-initargs
+   :produce 'turnip
+   :animations '((idle 1.0 1 :texture "turnip-sprout.png" :width 20 :height 20))))
+
+(defclass turnip-seed (seed-subject)
+  ()
+  (:default-initargs
+   :sprout 'turnip-sprout
+   :animations '((idle 1.0 1 :texture "turnip-seed.png" :width 20 :height 20))))
