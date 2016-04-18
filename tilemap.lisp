@@ -21,7 +21,7 @@ Author: Janne Pakarinen <gingeralesy@gmail.com>
 
 (defmethod add-object ((tile tile) (object tile-subject))
   (let ((half (/ (vx (bounds tile)) 2)))
-    (setf (pivot object) (vec half (- (/ half 2)) half)))
+    (setf (pivot object) (vec 0 (- (/ half 2)) half)))
   (flare-queue:enqueue object (objects tile)))
 
 (defmethod paint ((tile tile) target)
