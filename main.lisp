@@ -16,11 +16,17 @@
                         :name :camera
                         :target (unit :player scene)
                         :location (vec 0 150 250)) scene)
-  (enter (make-instance 'tilemap
-                        :location (vec 0 0 0)
-                        :bounds (vec 200 1 200)
-                        :width 10
-                        :height 10) scene))
+  (let ((field (make-instance 'tilemap
+                              :location (vec 0 0 0)
+                              :bounds (vec 200 1 200)
+                              :width 10
+                              :height 10)))
+    (enter field scene)
+    (dotimes (x 10)
+      (dotimes (y 10)
+        (let ((sprout (make-instance 'turnip-sprout)))
+          (start sprout)
+          (add-tile-object field sprout x y))))))
 
 (defun launch (&optional standalone)
   (setf *root* (if standalone

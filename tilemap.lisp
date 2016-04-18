@@ -6,6 +6,9 @@ Author: Janne Pakarinen <gingeralesy@gmail.com>
 
 (in-package #:org.shirakumo.fraf.ld35)
 
+(define-subject tile-subject (bound-subject pivoted-subject textured-subject)
+  ())
+
 (define-subject tile (bound-subject)
   ((objects :initform (flare-queue:make-queue) :accessor objects)
    (player-p :initform NIL :accessor player-p)
@@ -16,17 +19,19 @@ Author: Janne Pakarinen <gingeralesy@gmail.com>
    :y (error "Please provide y coordinate.")
    :bounds (error "Please provide tile size.")))
 
-(defmethod add-object ((tile tile) (object textured-subject))
+(defmethod add-object ((tile tile) (object tile-subject))
+  (let ((half (/ (vx (bounds tile)) 2)))
+    (setf (pivot object) (vec half (- (/ half 2)) half)))
   (flare-queue:enqueue object (objects tile)))
 
 (defmethod paint ((tile tile) target)
   (let* ((old-queue (objects tile))
          (new-queue (flare-queue:make-queue))
          (object (flare-queue:dequeue old-queue)))
-    (loop while object do
-          (paint object target)
-          (flare-queue:enqueue object new-queue)
-          (setf object (flare-queue:dequeue old-queue)))
+    (loop while object
+          do (paint object target)
+             (flare-queue:enqueue object new-queue)
+             (setf object (flare-queue:dequeue old-queue)))
     (setf (objects tile) new-queue))
   (call-next-method))
 
@@ -59,7 +64,7 @@ Author: Janne Pakarinen <gingeralesy@gmail.com>
     (let ((size (v/ (bounds map) 2)))
       (setf (pivot map) (v- 0 (vec (vx size) 0 (vz size))))))
   ;; Initialie with empty tiles
-  (let ((tile-side (/ (width map) (vx (bounds map))))
+  (let ((tile-side (/ (vx (bounds map)) (width map)))
         (map-location (location map)))
     (dotimes (x (width map))
       (dotimes (y (width map))
@@ -71,7 +76,8 @@ Author: Janne Pakarinen <gingeralesy@gmail.com>
 
 (defmethod add-tile-object ((map tilemap) (object textured-subject) x y)
   (let ((tile (tile map x y)))
-    (add-object tile object)))
+    (when tile
+      (add-object tile object))))
 
 (defmethod depth ((map tilemap))
   (slot-value map 'depth))

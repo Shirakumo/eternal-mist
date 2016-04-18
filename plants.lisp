@@ -6,7 +6,7 @@ Author: Janne Pakarinen <gingeralesy@gmail.com>
 
 (in-package #:org.shirakumo.fraf.ld35)
 
-(define-subject flora-subject (pivoted-subject bound-subject textured-subject)
+(define-subject flora-subject (tile-subject)
   ((name :initarg :name :accessor name)
    (family :initarg :family :accessor family))
   (:default-initargs
@@ -37,7 +37,7 @@ Author: Janne Pakarinen <gingeralesy@gmail.com>
   (let ((sprout (change-class seed (sprout seed)))
         (scene (scene *main*)))
     (leave seed scene)
-    (enter sprout scene)
+    (start sprout)
     (add-object (player-tile field) sprout)))
 
 (defmethod paint ((seed seed-subject) field)
@@ -53,9 +53,6 @@ Author: Janne Pakarinen <gingeralesy@gmail.com>
   (:default-initargs
    :produce NIL))
 
-(defmethod enter :after ((sprout sprout-subject) scene)
-  (start sprout))
-
 (defmethod stage ((sprout sprout-subject))
   (mod (clock sprout) (stage-time sprout)))
 
@@ -65,22 +62,23 @@ Author: Janne Pakarinen <gingeralesy@gmail.com>
     (make-instance (produce sprout) :location (location sprout))
     (leave sprout (scene *main*))))
 
-(define-subject produce-subject (flora-subject)) ;; TODO: add whatever statistics produce have
+(define-subject produce-subject (flora-subject)
+  ()) ;; TODO: add whatever statistics produce have
 
 ;; REMOVE STUFF BELOW SOMEDAY
 
-(defclass turnip-produce (produce-subject)
+(define-subject turnip-produce (produce-subject)
   ()
   (:default-initargs
    :texture "turnip-produce.png"))
 
-(defclass turnip-sprout (sprout-subject)
+(define-subject turnip-sprout (sprout-subject)
   ()
   (:default-initargs
    :produce 'turnip-produce
    :texture "sprout.png"))
 
-(defclass turnip-seed (seed-subject)
+(define-subject turnip-seed (seed-subject)
   ()
   (:default-initargs
    :sprout 'turnip-sprout

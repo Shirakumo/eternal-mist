@@ -18,6 +18,7 @@
                (:file "player")
                (:file "world")
                (:file "tilemap")
+               (:file "plants")
                (:file "main"))
   :depends-on (:trial)
   :build-operation "qt-program-op"
