@@ -6,7 +6,7 @@ Author: Janne Pakarinen <gingeralesy@gmail.com>
 
 (in-package #:org.shirakumo.fraf.ld35)
 
-(define-subject tile (subject)
+(define-subject tile (bound-subject)
   ((objects :initform (flare-queue:make-queue) :accessor objects)
    (player-p :initform NIL :accessor player-p)
    (x :initarg :x :accessor x)
@@ -15,10 +15,6 @@ Author: Janne Pakarinen <gingeralesy@gmail.com>
    :x (error "Please provide x coordinate.")
    :y (error "Please provide y coordinate.")
    :bounds (error "Please provide tile size.")))
-
-(defmethod initialize-instance :after ((tile tile) &key)
-  (setf (location tile)
-        (vec )))
 
 (defmethod add-object ((tile tile) (object textured-subject))
   (flare-queue:enqueue object (objects tile)))
@@ -63,37 +59,39 @@ Author: Janne Pakarinen <gingeralesy@gmail.com>
     (let ((size (v/ (bounds map) 2)))
       (setf (pivot map) (v- 0 (vec (vx size) 0 (vz size))))))
   ;; Initialie with empty tiles
-  (dotimes (x (width map))
-    (dotimes (y (width map))
-      (setf (tile map x y)
-            (make-instance 'tile :x x :y y
-                                 :bounds (vec tile-side 1 tile-side)
-                                 :location (vec (+ (* x tile-side) (vx map-location))
-                                                (vy map-location)
-                                                (+ (* y tile-side) (vz map-location))))))))
+  (let ((tile-side (/ (width map) (vx (bounds map))))
+        (map-location (location map)))
+    (dotimes (x (width map))
+      (dotimes (y (width map))
+        (setf (tile map x y)
+              (make-instance 'tile :x x :y y
+                                   :bounds (vec tile-side 1 tile-side)
+                                   :location (vec (* x tile-side) 0
+                                                  (* y tile-side))))))))
 
 (defmethod add-tile-object ((map tilemap) (object textured-subject) x y)
-  (let ((tile (tile map x y))
-        (tile-side (/ (width map) (bounds (vx map))))
-        (map-location (location map)))
+  (let ((tile (tile map x y)))
     (add-object tile object)))
 
 (defmethod depth ((map tilemap))
   (slot-value map 'depth))
 
 (defmethod paint ((map tilemap) target)
-  (dotimes (x (width map))
-    (dotimes (y (height map))
-      (let ((tile (tile map x y)))
-        (when tile (paint tile target)))))
+  (let ((loc (location map)))
+    (with-pushed-matrix
+      (gl:translate (vx loc) (vy loc) (vz loc))
+      (dotimes (x (width map))
+        (dotimes (y (height map))
+          (let ((tile (tile map x y)))
+            (when tile
+              (paint tile target)))))))
   (call-next-method))
 
 (defmethod tile-on-coordinates ((map tilemap) (coordinates located-subject))
-  (when coordinates
-    (let* ((point (v- (location coordinates) (location map)))
-           (tile-coords (v/ point (bounds map))))
-      (when (and (v<= 0 tile-coords) (< (vx tile-coords) (width map)) (< (vz tile-coords) (height map)))
-        (tile map (floor (vx tile-coords)) (floor (vz tile-coords)))))))
+  (let* ((point (v- (location coordinates) (location map)))
+         (tile-coords (v/ point (bounds map))))
+    (when (and (v<= 0 tile-coords) (< (vx tile-coords) (width map)) (< (vz tile-coords) (height map)))
+      (tile map (floor (vx tile-coords)) (floor (vz tile-coords))))))
 
 (defmethod tile ((map tilemap) x y)
   (aref (tiles map) x y))
@@ -111,8 +109,9 @@ Author: Janne Pakarinen <gingeralesy@gmail.com>
 
 (define-handler (tilemap tick) (ev)
   ;; NTS: Remember that the tile Y-coordinate is specified with the world Z-coordinate
-  (let* ((isection (intersects tilemap (unit :player (scene *main*)) :ignore-y T))
-         (tile (tile-on-coordinates tilemap isection)))
-    (if tile
-        (setf (player-tile tilemap) tile)
-        (setf (player-tile tilemap) NIL))))
+  (when tilemap
+    (let* ((isection (intersects tilemap (unit :player (scene *main*)) :ignore-y T))
+           (tile (when isection (tile-on-coordinates tilemap isection))))
+      (if tile
+          (setf (player-tile tilemap) tile)
+          (setf (player-tile tilemap) NIL)))))
