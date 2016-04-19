@@ -6,7 +6,7 @@ Author: Janne Pakarinen <gingeralesy@gmail.com>
 
 (in-package #:org.shirakumo.fraf.ld35)
 
-(define-subject tile-subject (bound-subject pivoted-subject textured-subject)
+(define-subject tile-subject (bound-subject pivoted-subject)
   ())
 
 (define-subject tile (bound-subject)

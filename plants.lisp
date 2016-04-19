@@ -6,7 +6,7 @@ Author: Janne Pakarinen <gingeralesy@gmail.com>
 
 (in-package #:org.shirakumo.fraf.ld35)
 
-(define-subject flora-subject (tile-subject face-subject)
+(define-subject flora-subject (face-subject tile-subject)
   ((name :initarg :name :accessor name)
    (family :initarg :family :accessor family))
   (:default-initargs
