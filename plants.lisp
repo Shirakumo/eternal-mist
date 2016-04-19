@@ -6,27 +6,13 @@ Author: Janne Pakarinen <gingeralesy@gmail.com>
 
 (in-package #:org.shirakumo.fraf.ld35)
 
-(define-subject flora-subject (tile-subject)
+(define-subject flora-subject (tile-subject face-subject)
   ((name :initarg :name :accessor name)
    (family :initarg :family :accessor family))
   (:default-initargs
    :name NIL
    :family NIL
    :bounds (vec 20 20 1)))
-
-(defmethod paint ((subject flora-subject) target)
-  (with-slots (bounds) subject
-    (gl:disable :cull-face)
-    (with-primitives :quads
-      (gl:tex-coord 0 0)
-      (gl:vertex 0 0)
-      (gl:tex-coord 1 0)
-      (gl:vertex (vx bounds) 0)
-      (gl:tex-coord 1 1)
-      (gl:vertex (vx bounds) (vy bounds))
-      (gl:tex-coord 0 1)
-      (gl:vertex 0 (vy bounds)))
-    (gl:enable :cull-face)))
 
 (define-subject seed-subject (flora-subject)
   ((sprout :initarg :sprout :accessor sprout))
