@@ -7,7 +7,7 @@
 (in-package #:org.shirakumo.fraf.ld35)
 (in-readtable :qtools)
 
-(define-subject colleen (collidable-subject rotated-subject pivoted-subject sprite-subject savable)
+(define-subject colleen (sprite-subject collidable-subject rotated-subject pivoted-subject savable)
   ((velocity :initarg :velocity :accessor velocity)
    (facing :initarg :facing :accessor facing))
   (:default-initargs
@@ -17,8 +17,8 @@
    :pivot (vec -25 0 5)
    :facing :left
    :name :player
-   :animations '((idle 2.0 20 :texture "colleen-idle.png"    :width 50 :height 80)
-                 (walk 0.7 20 :texture "colleen-walking.png" :width 50 :height 80))))
+   :animations '((idle 2.0 20 :texture "colleen-idle.png")
+                 (walk 0.7 20 :texture "colleen-walking.png"))))
 
 (defun nvclamp (vec x y z)
   (vsetf vec
