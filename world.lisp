@@ -1,10 +1,10 @@
 #|
- This file is a part of ld35
+ This file is a part of eternal-mist
  (c) 2016 Shirakumo http://tymoon.eu (shinmera@tymoon.eu)
  Author: Nicolas Hafner <shinmera@tymoon.eu>
 |#
 
-(in-package #:org.shirakumo.fraf.ld35)
+(in-package #:org.shirakumo.fraf.eternal-mist)
 (in-readtable :qtools)
 
 (define-subject world (mesh-subject)

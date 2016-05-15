@@ -1,10 +1,10 @@
 #|
-This file is a part of ld35
+This file is a part of eternal-mist
 (c) 2016 Shirakumo http://tymoon.eu (shinmera@tymoon.eu)
 Author: Janne Pakarinen <gingeralesy@gmail.com>
 |#
 
-(in-package #:org.shirakumo.fraf.ld35)
+(in-package #:org.shirakumo.fraf.eternal-mist)
 
 (define-subject flora-subject (face-subject tile-subject)
   ((name :initarg :name :accessor name)
