@@ -9,7 +9,7 @@
   :version "1.0.0"
   :author "Nicolas Hafner <shinmera@tymoon.eu>"
   :maintainer "Nicolas Hafner <shinmera@tymoon.eu>"
-  :license "Artistic"
+  :license "zlib"
   :description "Entry for the Ludum Dare 35"
   :homepage "https://github.com/Shirakumo/trial"
   :serial T
