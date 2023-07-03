@@ -1,8 +1,4 @@
-#|
-This file is a part of eternal-mist
-(c) 2016 Shirakumo http://tymoon.eu (shinmera@tymoon.eu)
-Author: Janne Pakarinen <gingeralesy@gmail.com>
-|#
+
 
 (in-package #:org.shirakumo.fraf.eternal-mist)
 
