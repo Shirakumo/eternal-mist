@@ -4,7 +4,7 @@
   :maintainer "Yukari Hafner <shinmera@tymoon.eu>"
   :license "zlib"
   :description "Entry for the Ludum Dare 35"
-  :homepage "https://github.com/Shirakumo/trial"
+  :homepage "https://shirakumo.org/project/trial"
   :serial T
   :defsystem-depends-on (:qtools)
   :components ((:file "package")
